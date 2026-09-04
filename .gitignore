@@ -33,3 +33,5 @@ docs/test-report.html
 
 # Claude local settings (machine-specific)
 .claude/settings.local.json
+# Claude Code 项目配置（不进仓库）
+.claude/
