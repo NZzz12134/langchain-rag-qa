@@ -1,0 +1,58 @@
+# Web
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+python-multipart==0.0.20
+orjson==3.10.15
+aiofiles==24.1.0
+
+# DB (MySQL)
+sqlalchemy[asyncio]==2.0.38
+asyncmy==0.2.10
+alembic==1.14.1
+
+# LangChain 0.3 全家桶（同 minor，patch 由 pip 解析兼容组合）
+langchain>=0.3.19,<0.4
+langchain-core>=0.3,<0.4
+langchain-community>=0.3.19,<0.4
+langchain-openai>=0.3.6,<0.4
+langchain-chroma>=0.2.2,<0.3
+langchain-text-splitters>=0.3.7,<0.4
+
+# Chroma（嵌入式开发模式用完整包；server 模式可换 chromadb-client）
+chromadb==0.5.23
+httpx==0.28.1
+
+# 文档解析
+pypdf==5.3.0
+docx2txt==0.8
+python-docx==1.1.2    # docx 表格提取（loaders.py 的表格补齐路径）
+openpyxl==3.1.5
+pandas==2.2.3
+chardet==5.2.0
+beautifulsoup4==4.13.3
+lxml==5.3.0
+html2text==2024.2.26
+
+# 检索
+jieba==0.42.1
+rank-bm25==0.2.2
+
+# 任务队列 / 缓存
+celery==5.4.0
+redis==5.2.1
+
+# 安全
+bcrypt==4.2.1
+PyJWT==2.10.1
+slowapi==0.1.9
+tenacity==9.0.0
+
+# 测试
+pytest==8.3.4
+pytest-asyncio==0.25.3
+pytest-html==4.1.1
+
+# MySQL 8 caching_sha2_password 认证所需的 RSA 加密
+cryptography==44.0.0

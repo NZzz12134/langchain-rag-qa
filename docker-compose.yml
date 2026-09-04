@@ -1,0 +1,106 @@
+# 生产全栈部署：nginx(frontend) + backend + worker + mysql + redis + chroma server
+# 启动：docker compose up -d
+# 注意：Chroma 用 server 模式，需在 .env 设置 CHROMA_MODE=server CHROMA_HOST=chroma CHROMA_PORT=8001
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      - MYSQL_HOST=mysql
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_MODE=server
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8001
+      - CHROMA_TOKEN=${CHROMA_TOKEN}
+    volumes:
+      - documents_data:/app/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chroma:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build: ./backend
+    command: celery -A app.workers.celery_app worker -l info --concurrency=2
+    env_file: .env
+    environment:
+      - MYSQL_HOST=mysql
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_MODE=server
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8001
+      - CHROMA_TOKEN=${CHROMA_TOKEN}
+    volumes:
+      - documents_data:/app/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chroma:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: ${MYSQL_DB:-rag_qa}
+      MYSQL_USER: ${MYSQL_USER:-rag_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-rag_pass_2024}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-root123456}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  chroma:
+    image: chromadb/chroma:0.5.23
+    # 不对外暴露端口：仅 backend/worker 经内网访问；生产强制 token 认证
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+      - CHROMA_SERVER_AUTHN_PROVIDER=token
+      - CHROMA_SERVER_AUTHN_CREDENTIALS=${CHROMA_TOKEN:?生产环境请在 .env 设置随机 CHROMA_TOKEN}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/v2/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  # 显式命名：备份脚本引用固定卷名（docs/deployment.md）
+  mysql_data: { name: rag_qa_mysql_data }
+  redis_data: { name: rag_qa_redis_data }
+  chroma_data: { name: rag_qa_chroma_data }
+  documents_data: { name: rag_qa_documents_data }

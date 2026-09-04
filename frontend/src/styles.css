@@ -1,0 +1,44 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  height: 100%;
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+}
+
+/* 聊天消息 markdown 样式 */
+.markdown-body {
+  line-height: 1.7;
+  word-break: break-word;
+}
+.markdown-body p { margin: 0.4em 0; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.4em; margin: 0.4em 0; }
+.markdown-body code {
+  background: #f3f4f6;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.markdown-body pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.markdown-body pre code { background: transparent; color: inherit; padding: 0; }
+
+/* 流式光标动画 */
+.streaming-cursor::after {
+  content: '▍';
+  animation: blink 0.9s infinite;
+  color: #409eff;
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
