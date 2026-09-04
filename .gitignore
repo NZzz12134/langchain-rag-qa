@@ -30,3 +30,6 @@ Desktop.ini
 
 # 测试产物
 docs/test-report.html
+
+# Claude local settings (machine-specific)
+.claude/settings.local.json
